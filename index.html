@@ -36,6 +36,12 @@
   /* Header */
   .header { background: var(--green-deep); padding: 52px 24px 18px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
   .header-back { background: rgba(255,255,255,0.22); border: 2px solid rgba(255,255,255,0.45); color: #ffffff; width: 42px; height: 42px; border-radius: 50%; font-size: 22px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .header-title-wrap { flex: 1; min-width: 0; }
+  .header-fwd { background: rgba(255,255,255,0.22); border: 2px solid rgba(255,255,255,0.45); color: #ffffff; width: 42px; height: 42px; border-radius: 50%; font-size: 22px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: auto; transition: opacity 0.15s; }
+  .header-fwd:disabled { opacity: 0.22; cursor: default; pointer-events: none; }
+  /* Hole screen — top-left back button (exits game) */
+  .hole-header { position: relative; }
+  .hole-exit-btn { position: absolute; top: 56px; left: 16px; background: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.5); color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; }
   .header-title { font-family: 'Playfair Display', serif; color: var(--cream); font-size: 20px; font-weight: 600; }
   .header-sub { color: rgba(255,255,255,0.62); font-size: 13px; margin-top: 2px; }
 
@@ -300,6 +306,21 @@
     .splash-logo { font-size: 30px; }
     .splash-tagline { margin-bottom: 28px; }
   }
+
+  /* Scorecard landscape expansion — JS-toggled when scorecard is active in landscape */
+  body.scorecard-landscape { align-items: flex-start; justify-content: flex-start; }
+  body.scorecard-landscape #app {
+    width: 100vw; height: 100dvh; border-radius: 0; box-shadow: none; max-width: none;
+  }
+  body.scorecard-landscape .sc-table { font-size: 12px; }
+  body.scorecard-landscape .sc-table th, body.scorecard-landscape .sc-table td { padding: 6px 5px; }
+  body.scorecard-landscape .screen-body { padding: 14px 18px; }
+  body.scorecard-landscape .scorecard-table { border-radius: 10px; }
+  body.scorecard-landscape .header { padding: 12px 20px; }
+  /* Rotate the fixed-size container to fill landscape without reformatting content */
+  @media (orientation: landscape) {
+    body.scorecard-landscape #app { transition: width 0.25s ease, height 0.25s ease; }
+  }
 </style>
 </head>
 <body ontouchstart="">
@@ -326,14 +347,14 @@
     </div>
   </div>
 
-  <!-- EXIT ROUND MODAL (3-button: Save / Discard / Keep Playing) -->
+  <!-- LEAVING GAME MODAL (3-button: Save / Delete / Keep Playing) -->
   <div class="confirm-modal" id="exit-round-modal">
     <div class="confirm-box">
-      <div class="confirm-title">Leave Round?</div>
+      <div class="confirm-title">Leaving Game?</div>
       <div class="confirm-sub" id="exit-round-sub">What would you like to do with this round?</div>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
-        <button id="exit-save-btn" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#f5f0e8;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer">&#128190; Save to History</button>
-        <button id="exit-discard-btn" style="width:100%;padding:14px;background:rgba(192,57,43,0.1);color:var(--red-soft);border:2px solid rgba(192,57,43,0.25);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer">&#128465; Discard Round</button>
+        <button id="exit-save-btn" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#f5f0e8;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer">&#128190; Save Game</button>
+        <button id="exit-discard-btn" style="width:100%;padding:14px;background:rgba(192,57,43,0.1);color:var(--red-soft);border:2px solid rgba(192,57,43,0.25);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer">&#128465; Delete Game</button>
         <button id="exit-cancel-btn" style="width:100%;padding:12px;background:rgba(26,45,74,0.07);color:var(--green-deep);border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer">Keep Playing</button>
       </div>
     </div>
@@ -1554,7 +1575,102 @@ let stratGoal = null, stratRoundPts = 0, gnfGoal = null, bdbGoal = null, practic
 let gnfFlowStreak = 0, gnfMaxStreak = 0, gnfStreakBonus = 0;
 let selectedSCHole = null;
 
-function showScreen(id) {
+function updateScorecardLandscape() {
+  const scActive = document.getElementById('screen-scorecard') &&
+                   document.getElementById('screen-scorecard').classList.contains('active');
+  const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+  if (scActive && isLandscape) {
+    document.body.classList.add('scorecard-landscape');
+  } else {
+    document.body.classList.remove('scorecard-landscape');
+  }
+}
+window.addEventListener('orientationchange', function() {
+  setTimeout(updateScorecardLandscape, 120);
+});
+window.addEventListener('resize', updateScorecardLandscape);
+
+// ── NAVIGATION HISTORY ──
+let navHistory = [];
+let navFuture  = [];
+const GAME_SCREENS = new Set(['screen-hole','screen-scorecard','screen-perma','screen-summary']);
+
+function updateNavArrows() {
+  const canFwd = navFuture.length > 0;
+  document.querySelectorAll('.header-fwd').forEach(btn => {
+    btn.disabled = !canFwd;
+  });
+}
+
+function navBack() {
+  if (!navHistory.length) return;
+  const activeId = document.querySelector('.screen.active')?.id;
+  const target   = navHistory[navHistory.length - 1];
+  const roundActive = round.holes && round.holes.length > 0 &&
+    (round.holes.some(h => h.completed || h.shots.length > 0) || round.currentHole > 0);
+  // Intercept if leaving an active game
+  if (GAME_SCREENS.has(activeId) && !GAME_SCREENS.has(target) && roundActive) {
+    goHome(); return;
+  }
+  navFuture.unshift(activeId);
+  navHistory.pop();
+  showScreen(target, true);
+}
+
+function navForward() {
+  if (!navFuture.length) return;
+  const activeId = document.querySelector('.screen.active')?.id;
+  navHistory.push(activeId);
+  const next = navFuture.shift();
+  showScreen(next, true);
+}
+
+function initNavButtons() {
+  // Wire every .header-back to navBack; inject a forward button at the end of every header
+  document.querySelectorAll('.screen').forEach(screen => {
+    const hdr = screen.querySelector(':scope > .header');
+    if (!hdr) return;
+    let back = hdr.querySelector('.header-back');
+    // Add missing back button (e.g. screen-perma has no back)
+    if (!back) {
+      back = document.createElement('button');
+      back.className = 'header-back';
+      back.innerHTML = '&#8592;';
+      hdr.insertBefore(back, hdr.firstChild);
+      // Wrap the title content in a flex-grow div if not already
+      const titleDiv = hdr.querySelector('div');
+      if (titleDiv) titleDiv.style.flex = '1';
+    }
+    back.onclick = navBack;
+    // Ensure title div grows to fill space
+    const titleDiv = hdr.querySelector(':scope > div');
+    if (titleDiv) titleDiv.style.flex = '1';
+    // Forward button
+    const fwd = document.createElement('button');
+    fwd.className = 'header-fwd';
+    fwd.innerHTML = '&#8594;';
+    fwd.onclick = navForward;
+    fwd.disabled = true;
+    hdr.appendChild(fwd);
+  });
+  // Add a top-left exit button to the hole-header (absolutely positioned)
+  const holeHdr = document.querySelector('#screen-hole .hole-header');
+  if (holeHdr) {
+    const btn = document.createElement('button');
+    btn.className = 'hole-exit-btn';
+    btn.title = 'Leave Game';
+    btn.innerHTML = '&#8592;';
+    btn.onclick = navBack;
+    holeHdr.appendChild(btn);
+  }
+  updateNavArrows();
+}
+
+function showScreen(id, _skipHistory) {
+  if (!_skipHistory) {
+    const cur = document.querySelector('.screen.active');
+    if (cur && cur.id !== id) { navHistory.push(cur.id); navFuture = []; }
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById('posOverlay').classList.remove('show');
@@ -1566,6 +1682,7 @@ document.addEventListener('touchstart', function(){}, {passive: true});
   if (id === 'screen-hole') renderHoleScreen();
   if (id === 'screen-scorecard') { selectedSCHole = null; renderScorecard(); }
   if (id === 'screen-tunes') renderTunesScreen();
+  updateScorecardLandscape();
   if (id === 'screen-game') {
     document.querySelectorAll('.game-card').forEach(c => { c.style.display = 'block'; c.classList.remove('selected'); });
     const cb = document.getElementById('game-change-btn'); if (cb) cb.style.display = 'none';
@@ -1582,6 +1699,7 @@ document.addEventListener('touchstart', function(){}, {passive: true});
   if (id === 'screen-golfer') loadGolferScreen();
   if (id === 'screen-clubhouse') renderClubhouse();
   if (id === 'screen-stats') { renderGameHistory(); switchMGTab('rounds'); }
+  updateNavArrows();
 }
 
 function renderClubhouse() {
@@ -2923,6 +3041,7 @@ function goHome() {
     saveRoundToHistory();
     round = {courseId:null,tee:null,game:'none',handicap:0,currentHole:0,holes:[],stigGoals:[]};
     girStreak=0;bdbZone=0;bdbFinish=0;bdbPutts=0;bdbExceptional=0;gnfFlowStreak=0;gnfMaxStreak=0;gnfStreakBonus=0;selectedTeeIdx=null;
+    navHistory=[]; navFuture=[];
     saveToStorage();
     showToast('Round saved to history');
     showScreen('screen-splash');
@@ -2932,6 +3051,7 @@ function goHome() {
     document.getElementById('exit-save-btn').style.display = '';
     round = {courseId:null,tee:null,game:'none',handicap:0,currentHole:0,holes:[],stigGoals:[]};
     girStreak=0;bdbZone=0;bdbFinish=0;bdbPutts=0;bdbExceptional=0;gnfFlowStreak=0;gnfMaxStreak=0;gnfStreakBonus=0;selectedTeeIdx=null;
+    navHistory=[]; navFuture=[];
     saveToStorage();
     try { localStorage.removeItem('canardly_round'); } catch(e) {}
     showScreen('screen-splash');
@@ -4111,6 +4231,7 @@ function confirmNewRound() {
   showConfirm('New Round?', 'Current round data will be cleared.', 'Start Fresh', () => {
     round={courseId:null,tee:null,game:'none',handicap:0,currentHole:0,holes:[],stigGoals:[]};
     girStreak=0;bdbZone=0;bdbFinish=0;bdbPutts=0;bdbExceptional=0;gnfFlowStreak=0;gnfMaxStreak=0;gnfStreakBonus=0;selectedTeeIdx=null;
+    navHistory=[]; navFuture=[];
     saveToStorage();
     try { localStorage.removeItem('canardly_round'); } catch(e) {}
     showScreen('screen-courses');
@@ -4151,6 +4272,7 @@ function loadFromStorage() {
 
 // Load on startup
 loadFromStorage();
+initNavButtons();
 updateSplashGreeting();
 
 </script>
