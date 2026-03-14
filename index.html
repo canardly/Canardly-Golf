@@ -279,6 +279,27 @@
   /* PERMA star rating */
   .perma-star { width:44px; height:44px; border:none; background:none; font-size:26px; cursor:pointer; opacity:0.25; transition:opacity 0.15s; padding:0; display:flex; align-items:center; justify-content:center; }
   .perma-star.lit { opacity:1; }
+
+  /* ── Landscape mode ─────────────────────────────────────────────────── */
+  @media (orientation: landscape) and (max-height: 500px) {
+    body { align-items: flex-start; justify-content: flex-start; }
+    #app { width: 100vw; height: 100dvh; border-radius: 0; box-shadow: none; }
+    .hole-header { padding: 14px 20px 14px; }
+    .header { padding: 14px 24px 14px; }
+    .hole-stat-value { font-size: 20px; }
+    .hole-stat-label { font-size: 11px; }
+    .hole-nav-bar { padding: 6px 14px 10px; }
+    .hnb-complete { height: 48px; }
+    .hnb-arrow { height: 48px; }
+    .hnb-sc { height: 48px; }
+    .sc-table { font-size: 11px; }
+    .sc-table th, .sc-table td { padding: 5px 3px; }
+    .sc-table th:first-child, .sc-table td:first-child { padding-left: 6px; }
+    .scorecard-table { border-radius: 10px; }
+    .screen-body { padding: 12px; }
+    .splash-logo { font-size: 30px; }
+    .splash-tagline { margin-bottom: 28px; }
+  }
 </style>
 </head>
 <body ontouchstart="">
@@ -301,6 +322,19 @@
       <div class="confirm-btns">
         <button class="confirm-btn-cancel" id="confirm-cancel-btn">Cancel</button>
         <button class="confirm-btn-ok" id="confirm-ok-btn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXIT ROUND MODAL (3-button: Save / Discard / Keep Playing) -->
+  <div class="confirm-modal" id="exit-round-modal">
+    <div class="confirm-box">
+      <div class="confirm-title">Leave Round?</div>
+      <div class="confirm-sub" id="exit-round-sub">What would you like to do with this round?</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        <button id="exit-save-btn" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#f5f0e8;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer">&#128190; Save to History</button>
+        <button id="exit-discard-btn" style="width:100%;padding:14px;background:rgba(192,57,43,0.1);color:var(--red-soft);border:2px solid rgba(192,57,43,0.25);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer">&#128465; Discard Round</button>
+        <button id="exit-cancel-btn" style="width:100%;padding:12px;background:rgba(26,45,74,0.07);color:var(--green-deep);border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer">Keep Playing</button>
       </div>
     </div>
   </div>
@@ -706,12 +740,12 @@
         <div style="width:1px;background:var(--cream-dark)"></div>
         <div class="putt-box">
           <div class="card-label">Putts</div>
-          <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px">
-            <button class="num-btn" onclick="adjPutts(-1)">&#8722;</button>
-            <span class="num-val" id="putt-val" style="color:var(--charcoal);margin-top:0">0</span>
-            <button class="num-btn" onclick="adjPutts(1)">+</button>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px">
+            <button onclick="adjPutts(-1)" style="width:52px;height:52px;background:var(--cream);border:2px solid var(--cream-dark);border-radius:12px;font-size:26px;font-weight:900;color:var(--green-deep);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;-webkit-tap-highlight-color:transparent" onpointerdown="this.style.background='var(--green-deep)';this.style.color='var(--gold)'" onpointerup="this.style.background='var(--cream)';this.style.color='var(--green-deep)'" onpointerout="this.style.background='var(--cream)';this.style.color='var(--green-deep)'">&#8722;</button>
+            <span class="num-val" id="putt-val" style="color:var(--charcoal);margin-top:0;min-width:32px;text-align:center">0</span>
+            <button onclick="adjPutts(1)" style="width:52px;height:52px;background:var(--green-deep);border:2px solid var(--green-deep);border-radius:12px;font-size:26px;font-weight:900;color:var(--gold);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;-webkit-tap-highlight-color:transparent" onpointerdown="this.style.background='var(--gold)';this.style.color='var(--green-deep)'" onpointerup="this.style.background='var(--green-deep)';this.style.color='var(--gold)'" onpointerout="this.style.background='var(--green-deep)';this.style.color='var(--gold)'">+</button>
           </div>
-          <button onclick="completeHole()" style="margin-top:8px;width:100%;padding:7px 0;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#f5f0e8;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.04em">Log Putts &#8594;</button>
+          <button onclick="completeHole()" style="margin-top:10px;width:100%;padding:8px 0;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:#f5f0e8;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.04em">Log Putts &#8594;</button>
         </div>
       </div>
       <div style="height:12px"></div>
@@ -1423,24 +1457,30 @@ let golfer = {
   account: 'free'
 };
 
+const ACCOUNT_DESC = {
+  'free':      'Free — full scorecard, shot logging, and round summary. Up to 5 saved rounds.',
+  'canardly+': 'Canardly+ — unlimited rounds, multi-round stats, game history, and priority support.',
+  'coach':     'Coach — all Canardly+ features plus player management and shared round review.'
+};
+
 let clubBag = [
-  {id:'Dvr', name:'Driver',         type:'driver',  brand:'', version:'', active:false},
+  {id:'Dvr', name:'Driver',         type:'driver',  brand:'', version:'', active:true},
   {id:'3W',  name:'3 Wood',         type:'wood',    brand:'', version:'', active:false},
-  {id:'H2',  name:'Hybrid 2',       type:'hybrid',  brand:'', version:'', active:false},
-  {id:'H3',  name:'Hybrid 3',       type:'hybrid',  brand:'', version:'', active:false},
+  {id:'H2',  name:'Hybrid 2',       type:'hybrid',  brand:'', version:'', active:true},
+  {id:'H3',  name:'Hybrid 3',       type:'hybrid',  brand:'', version:'', active:true},
   {id:'2i',  name:'2 Iron',         type:'iron',    brand:'', version:'', active:false},
   {id:'3i',  name:'3 Iron',         type:'iron',    brand:'', version:'', active:false},
   {id:'4i',  name:'4 Iron',         type:'iron',    brand:'', version:'', active:false},
-  {id:'5i',  name:'5 Iron',         type:'iron',    brand:'', version:'', active:false},
+  {id:'5i',  name:'5 Iron',         type:'iron',    brand:'', version:'', active:true},
   {id:'6i',  name:'6 Iron',         type:'iron',    brand:'', version:'', active:false},
-  {id:'7i',  name:'7 Iron',         type:'iron',    brand:'', version:'', active:false},
+  {id:'7i',  name:'7 Iron',         type:'iron',    brand:'', version:'', active:true},
   {id:'8i',  name:'8 Iron',         type:'iron',    brand:'', version:'', active:false},
-  {id:'9i',  name:'9 Iron',         type:'iron',    brand:'', version:'', active:false},
-  {id:'PW',  name:'Pitching Wedge', type:'wedge',   brand:'', version:'', active:false},
+  {id:'9i',  name:'9 Iron',         type:'iron',    brand:'', version:'', active:true},
+  {id:'PW',  name:'Pitching Wedge', type:'wedge',   brand:'', version:'', active:true},
   {id:'GW',  name:'Gap Wedge',      type:'wedge',   brand:'', version:'', active:false},
   {id:'LW',  name:'Lob Wedge',      type:'wedge',   brand:'', version:'', active:false},
-  {id:'SW',  name:'Sand Wedge',     type:'wedge',   brand:'', version:'', active:false},
-  {id:'Ptr', name:'Putter',         type:'putter',  brand:'', version:'', active:false},
+  {id:'SW',  name:'Sand Wedge',     type:'wedge',   brand:'', version:'', active:true},
+  {id:'Ptr', name:'Putter',         type:'putter',  brand:'', version:'', active:true},
 ];
 
 let courses = [{
@@ -2451,7 +2491,14 @@ function getCurrentHoleData() { const c=getCurrentCourse(); return c?c.holeData[
 
 function buildClubGrid() {
   const grid = document.getElementById('club-grid'); grid.innerHTML = '';
-  clubBag.filter(c => c.active).forEach(club => {
+  const active = clubBag.filter(c => c.active);
+  if (!active.length) {
+    grid.style.display = 'block';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:10px 0;font-size:12px;color:var(--sage)">No clubs in bag — <span style="color:var(--gold);font-weight:700;cursor:pointer" onclick="showScreen(\'screen-clubs\')">set up My Bag</span> in Clubhouse</div>';
+    return;
+  }
+  grid.style.display = 'grid';
+  active.forEach(club => {
     const btn = document.createElement('button');
     btn.className = 'club-btn'; btn.textContent = club.id;
     btn.title = [club.name, club.brand, club.version].filter(Boolean).join(' · ');
@@ -2852,7 +2899,47 @@ function showConfirm(msg, sub, okLabel, onOk) {
 }
 
 function goHome() {
-  showConfirm('Return to Home?', 'Your round data is preserved.', 'Go Home', () => showScreen('screen-splash'));
+  const comp = round.holes.filter(h => h.completed);
+  const modal = document.getElementById('exit-round-modal');
+  const sub = document.getElementById('exit-round-sub');
+
+  if (comp.length > 0) {
+    const course = getCurrentCourse();
+    const gross = comp.reduce((s,h) => s+(h.score||0), 0);
+    const par   = course ? course.holeData.slice(0,comp.length).reduce((s,h) => s+h.par, 0) : 0;
+    const diff  = gross - par;
+    const diffStr = diff > 0 ? '+'+diff : diff === 0 ? 'E' : ''+diff;
+    sub.textContent = comp.length + ' holes · ' + gross + ' (' + diffStr + '). Save to History or discard?';
+  } else {
+    sub.textContent = 'No completed holes yet. Discard this round?';
+    document.getElementById('exit-save-btn').style.display = 'none';
+  }
+
+  modal.style.display = 'flex';
+
+  document.getElementById('exit-save-btn').onclick = () => {
+    modal.style.display = 'none';
+    document.getElementById('exit-save-btn').style.display = '';
+    saveRoundToHistory();
+    round = {courseId:null,tee:null,game:'none',handicap:0,currentHole:0,holes:[],stigGoals:[]};
+    girStreak=0;bdbZone=0;bdbFinish=0;bdbPutts=0;bdbExceptional=0;gnfFlowStreak=0;gnfMaxStreak=0;gnfStreakBonus=0;selectedTeeIdx=null;
+    saveToStorage();
+    showToast('Round saved to history');
+    showScreen('screen-splash');
+  };
+  document.getElementById('exit-discard-btn').onclick = () => {
+    modal.style.display = 'none';
+    document.getElementById('exit-save-btn').style.display = '';
+    round = {courseId:null,tee:null,game:'none',handicap:0,currentHole:0,holes:[],stigGoals:[]};
+    girStreak=0;bdbZone=0;bdbFinish=0;bdbPutts=0;bdbExceptional=0;gnfFlowStreak=0;gnfMaxStreak=0;gnfStreakBonus=0;selectedTeeIdx=null;
+    saveToStorage();
+    try { localStorage.removeItem('canardly_round'); } catch(e) {}
+    showScreen('screen-splash');
+  };
+  document.getElementById('exit-cancel-btn').onclick = () => {
+    modal.style.display = 'none';
+    document.getElementById('exit-save-btn').style.display = '';
+  };
 }
 
 function goPrevHole() {
@@ -3355,15 +3442,19 @@ function buildSCSection(side, start, end, activeHole) {
   }
   shotHtml += '</div>';
 
-  // ─── STELIGMAN-3 TRACKER ───────────────────────────
+  // ─── GAME TRACKER (Seligment-3 / Strategerie / BeDaBall / Grit 'n Flow) ───
   let trackerHtml = '<div style="margin-bottom:16px">';
+
+  // ── helper: game tracker table wrapper ──
+  const mkTrackerTable = (gameName) => `<div class="scorecard-table" style="border-radius:0 0 16px 16px;overflow:hidden"><table class="game-tracker-table"><thead><tr><th colspan="${totalCols+2}" style="background:var(--green-mid);color:var(--gold);padding:6px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.08em">${gameName} · ${side==='front'?'Front 9':'Back 9'}</th></tr></thead><tbody>`;
+  const endTrackerTable = `</tbody></table></div>`;
+
   if (round.game === 'stig3') {
     const hasGoals = round.stigGoals && round.stigGoals.some(g => g != null);
 
-    trackerHtml += '<div class="scorecard-table" style="border-radius:0 0 16px 16px;overflow:hidden"><table class="game-tracker-table">';
-    trackerHtml += `<thead><tr><th colspan="${totalCols+2}" style="background:var(--green-mid);color:var(--gold);padding:6px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.08em">Seligment-3 \u00B7 ${side==='front'?'Front 9':'Back 9'}</th></tr></thead><tbody>`;
+    trackerHtml += mkTrackerTable('Seligment-3');
 
-    // ── Goal row: show segment total only at last hole of segment
+    // Goal row: show segment total only at last hole of segment
     trackerHtml += '<tr><td>Goal</td>';
     let goalRunTot = 0;
     for (let col = 0; col < totalCols; col++) {
@@ -3371,7 +3462,7 @@ function buildSCSection(side, start, end, activeHole) {
       const wi       = Math.floor(hi / 3);
       const segSize  = Math.min(3, course.holes - wi*3);
       const lastInSeg = (hi % 3 === segSize - 1) || (hi === course.holes - 1);
-      const isSegDiv = (hi % 3 === 2) && (hi < course.holes - 1);  // draw divider after hole 3,6,9...
+      const isSegDiv = (hi % 3 === 2) && (hi < course.holes - 1);
       const border   = isSegDiv ? 'border-right:2px solid var(--green-deep);' : '';
       const segGoal  = (round.stigGoals && round.stigGoals[wi] != null) ? round.stigGoals[wi] : null;
       if (lastInSeg && segGoal !== null) {
@@ -3383,7 +3474,7 @@ function buildSCSection(side, start, end, activeHole) {
     }
     trackerHtml += `<td style="font-weight:700">${hasGoals ? (goalRunTot>0?'+'+goalRunTot:goalRunTot) : '\u2014'}</td></tr>`;
 
-    // ── Game row: actual vs par every hole as number (0 not E)
+    // Game row: actual vs par every hole
     trackerHtml += '<tr><td>Game</td>';
     let gameTot = 0;
     for (let col = 0; col < totalCols; col++) {
@@ -3400,8 +3491,7 @@ function buildSCSection(side, start, end, activeHole) {
     const gcls = gameTot<0?'gt-under':gameTot>0?'gt-over':'gt-even';
     trackerHtml += `<td class="${gcls}" style="font-weight:700">${gameTot>0?'+'+gameTot:gameTot}</td></tr>`;
 
-    // ── Result row: at segment-end only — (goal) minus (actual vs par for segment)
-    // Positive = under goal (good), negative = over goal (bad)
+    // Result row: at segment-end only
     trackerHtml += '<tr><td></td>';
     for (let col = 0; col < totalCols; col++) {
       const hi       = start + col;
@@ -3411,8 +3501,6 @@ function buildSCSection(side, start, end, activeHole) {
       const isSegDiv = (hi % 3 === 2) && (hi < course.holes - 1);
       const border   = isSegDiv ? 'border-right:2px solid var(--green-deep);' : '';
       if (!lastInSeg) { trackerHtml += `<td style="${border}"></td>`; continue; }
-
-      // Sum actual vs par for segment
       const segStart = wi * 3;
       const segEnd   = Math.min(segStart + 3, course.holes);
       let segVP = 0, allDone = true;
@@ -3422,9 +3510,7 @@ function buildSCSection(side, start, end, activeHole) {
         segVP += hh.score - course.holeData[sh].par;
       }
       if (!allDone) { trackerHtml += `<td style="${border}color:#ccc">\u2014</td>`; continue; }
-
       const segGoal = (round.stigGoals && round.stigGoals[wi] != null) ? round.stigGoals[wi] : null;
-      // Result row: actual - goal (negative = under goal = good)
       let result, rcls;
       if (segGoal !== null) {
         result = segVP - segGoal;
@@ -3437,8 +3523,161 @@ function buildSCSection(side, start, end, activeHole) {
       trackerHtml += `<td class="${rcls}" style="${border}font-weight:700;text-align:right;padding-right:6px">${rs}</td>`;
     }
     trackerHtml += '<td></td></tr>';
-    trackerHtml += '</tbody></table></div>';
+    trackerHtml += endTrackerTable;
+
+  } else if (round.game === 'strat') {
+    const hasGoal = stratGoal !== null;
+    trackerHtml += mkTrackerTable('Strategerie');
+
+    // Goal row: section goal at last col only
+    trackerHtml += '<tr><td>Goal</td>';
+    for (let col = 0; col < totalCols; col++) {
+      const isLast = col === totalCols - 1;
+      trackerHtml += isLast && hasGoal
+        ? `<td style="font-weight:700;color:var(--green-deep)">${stratGoal>0?'+'+stratGoal:stratGoal}</td>`
+        : '<td></td>';
+    }
+    trackerHtml += `<td style="font-weight:700">${hasGoal ? (stratGoal>0?'+'+stratGoal:stratGoal) : '\u2014'}</td></tr>`;
+
+    // Pts row: points per hole
+    trackerHtml += '<tr><td>Pts</td>';
+    let ptsTot = 0;
+    for (let col = 0; col < totalCols; col++) {
+      const hi = start + col;
+      const h  = round.holes[hi];
+      if (!h || !h.completed) { trackerHtml += `<td style="color:#ccc">\u2014</td>`; continue; }
+      const pts = calcStratPoints(h, course.holeData[hi]);
+      ptsTot += pts;
+      const cls = pts > 0 ? 'gt-under' : pts < 0 ? 'gt-over' : 'gt-even';
+      trackerHtml += `<td class="${cls}">${pts>0?'+'+pts:pts}</td>`;
+    }
+    const ptsCls = ptsTot > 0 ? 'gt-under' : ptsTot < 0 ? 'gt-over' : 'gt-even';
+    trackerHtml += `<td class="${ptsCls}" style="font-weight:700">${ptsTot>0?'+'+ptsTot:ptsTot}</td></tr>`;
+
+    // Result row: at last col — actual vs goal (+pts = beat goal = good)
+    trackerHtml += '<tr><td></td>';
+    let secPts = 0, secDone = true;
+    for (let c = 0; c < totalCols; c++) {
+      const hh = round.holes[start+c];
+      if (!hh || !hh.completed) { secDone = false; }
+      else secPts += calcStratPoints(hh, course.holeData[start+c]);
+    }
+    for (let col = 0; col < totalCols; col++) {
+      const isLast = col === totalCols - 1;
+      if (!isLast) { trackerHtml += '<td></td>'; continue; }
+      if (!secDone || !hasGoal) { trackerHtml += `<td style="color:#ccc">\u2014</td>`; continue; }
+      const result = secPts - stratGoal;
+      const rcls = result > 0 ? 'gt-under' : result < 0 ? 'gt-over' : 'gt-even';
+      const rs = result > 0 ? '+'+result : ''+result;
+      trackerHtml += `<td class="${rcls}" style="font-weight:700;text-align:right;padding-right:6px">${rs}</td>`;
+    }
+    trackerHtml += '<td></td></tr>';
+    trackerHtml += endTrackerTable;
+
+  } else if (round.game === 'scramble') {
+    const hasGoal = bdbGoal !== null;
+    trackerHtml += mkTrackerTable('BeDaBall');
+
+    // Goal row
+    trackerHtml += '<tr><td>Goal</td>';
+    for (let col = 0; col < totalCols; col++) {
+      const isLast = col === totalCols - 1;
+      trackerHtml += isLast && hasGoal
+        ? `<td style="font-weight:700;color:var(--green-deep)">${bdbGoal}</td>`
+        : '<td></td>';
+    }
+    trackerHtml += `<td style="font-weight:700">${hasGoal ? bdbGoal : '\u2014'}</td></tr>`;
+
+    // Pts row
+    trackerHtml += '<tr><td>Pts</td>';
+    let bdbTot = 0;
+    for (let col = 0; col < totalCols; col++) {
+      const hi = start + col;
+      const h  = round.holes[hi];
+      if (!h || !h.completed) { trackerHtml += `<td style="color:#ccc">\u2014</td>`; continue; }
+      const pts = calcBdbPoints(h, course.holeData[hi]).total;
+      bdbTot += pts;
+      const cls = pts >= 2 ? 'gt-under' : pts === 1 ? 'gt-even' : 'gt-over';
+      trackerHtml += `<td class="${cls}">${pts}</td>`;
+    }
+    const bdbCls = bdbTot > 0 ? 'gt-under' : 'gt-even';
+    trackerHtml += `<td class="${bdbCls}" style="font-weight:700">${bdbTot}</td></tr>`;
+
+    // Result row
+    trackerHtml += '<tr><td></td>';
+    let secBdb = 0, secBdbDone = true;
+    for (let c = 0; c < totalCols; c++) {
+      const hh = round.holes[start+c];
+      if (!hh || !hh.completed) { secBdbDone = false; }
+      else secBdb += calcBdbPoints(hh, course.holeData[start+c]).total;
+    }
+    for (let col = 0; col < totalCols; col++) {
+      const isLast = col === totalCols - 1;
+      if (!isLast) { trackerHtml += '<td></td>'; continue; }
+      if (!secBdbDone || !hasGoal) { trackerHtml += `<td style="color:#ccc">\u2014</td>`; continue; }
+      const result = secBdb - bdbGoal;
+      const rcls = result > 0 ? 'gt-under' : result < 0 ? 'gt-over' : 'gt-even';
+      const rs = result > 0 ? '+'+result : ''+result;
+      trackerHtml += `<td class="${rcls}" style="font-weight:700;text-align:right;padding-right:6px">${rs}</td>`;
+    }
+    trackerHtml += '<td></td></tr>';
+    trackerHtml += endTrackerTable;
+
+  } else if (round.game === 'gritflow') {
+    const hasGoal = gnfGoal !== null;
+    trackerHtml += mkTrackerTable("Grit 'n Flow");
+
+    // Goal row
+    trackerHtml += '<tr><td>Goal</td>';
+    for (let col = 0; col < totalCols; col++) {
+      const isLast = col === totalCols - 1;
+      trackerHtml += isLast && hasGoal
+        ? `<td style="font-weight:700;color:var(--green-deep)">${gnfGoal}</td>`
+        : '<td></td>';
+    }
+    trackerHtml += `<td style="font-weight:700">${hasGoal ? gnfGoal : '\u2014'}</td></tr>`;
+
+    // Pts row
+    trackerHtml += '<tr><td>Pts</td>';
+    let gnfTot = 0;
+    for (let col = 0; col < totalCols; col++) {
+      const hi = start + col;
+      const h  = round.holes[hi];
+      if (!h || !h.completed) { trackerHtml += `<td style="color:#ccc">\u2014</td>`; continue; }
+      const grit = calcGnfGritPoints(h, course.holeData[hi]).grit;
+      const flow = calcGnfFlowHole(h, course.holeData[hi]) ? 1 : 0;
+      const pts  = grit + flow;
+      gnfTot    += pts;
+      const cls  = pts >= 2 ? 'gt-under' : pts === 1 ? 'gt-even' : 'gt-over';
+      trackerHtml += `<td class="${cls}">${pts}</td>`;
+    }
+    const gnfCls = gnfTot > 0 ? 'gt-under' : 'gt-even';
+    trackerHtml += `<td class="${gnfCls}" style="font-weight:700">${gnfTot}</td></tr>`;
+
+    // Result row
+    trackerHtml += '<tr><td></td>';
+    let secGnf = 0, secGnfDone = true;
+    for (let c = 0; c < totalCols; c++) {
+      const hh = round.holes[start+c];
+      if (!hh || !hh.completed) { secGnfDone = false; }
+      else {
+        secGnf += calcGnfGritPoints(hh, course.holeData[start+c]).grit;
+        secGnf += calcGnfFlowHole(hh, course.holeData[start+c]) ? 1 : 0;
+      }
+    }
+    for (let col = 0; col < totalCols; col++) {
+      const isLast = col === totalCols - 1;
+      if (!isLast) { trackerHtml += '<td></td>'; continue; }
+      if (!secGnfDone || !hasGoal) { trackerHtml += `<td style="color:#ccc">\u2014</td>`; continue; }
+      const result = secGnf - gnfGoal;
+      const rcls = result > 0 ? 'gt-under' : result < 0 ? 'gt-over' : 'gt-even';
+      const rs = result > 0 ? '+'+result : ''+result;
+      trackerHtml += `<td class="${rcls}" style="font-weight:700;text-align:right;padding-right:6px">${rs}</td>`;
+    }
+    trackerHtml += '<td></td></tr>';
+    trackerHtml += endTrackerTable;
   }
+
   trackerHtml += '</div>';
 
   container.innerHTML = html + shotHtml + trackerHtml;
